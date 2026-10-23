@@ -1,0 +1,25 @@
+__pycache__/
+*.pyc
+
+# Raw + large generated data (regenerate via pipeline/run_all.py)
+nyc_taxi_trip_duration.csv
+outputs/bengaluru_mobility_raw.csv
+outputs/cleaned_bengaluru_mobility.csv
+outputs/mapreduce_input.tsv
+outputs/mapreduce/job4_demand_dataset.csv
+
+# Keep these (small, needed by the deployed app):
+!outputs/dashboard_data.json
+!outputs/mapreduce/job1_modal_demand_by_hour.csv
+!outputs/mapreduce/job2_avg_duration_and_fare_by_zone.csv
+!outputs/mapreduce/job3_top_congestion_corridors.csv
+
+# Archived NYC-taxi version of the project (large CSVs inside)
+_archive_nyc_taxi/
+
+MCA_AIML_2026-27(Odd)_III_Sem_Handbook.pdf
+
+# Submission zip (rebuilt from the repo) and NYC-era source files
+*.zip
+*.ipynb
+Topic Smart Urban Taxi Analytics Bi.txt

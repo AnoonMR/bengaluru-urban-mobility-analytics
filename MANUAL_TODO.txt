@@ -1,0 +1,183 @@
+!! UPDATE 2026-10-23: THE PROJECT IS NOW "BENGALURU MULTI-MODAL URBAN MOBILITY ANALYTICS" !!
+The NYC-taxi details below are OUT OF DATE (old version archived in _archive_nyc_taxi/).
+Current run:   python pipeline\run_all.py   (5 steps, ~10s, synthetic Bengaluru data — no raw CSV needed)
+               python backend\app.py         then open http://127.0.0.1:5000  (User / Driver / Admin views)
+Current numbers: see CLAUDE.md "Current metrics" and outputs\pipeline_run_log.txt.
+deliverables\ now holds the Bengaluru report + deck (old NYC ones are in _archive_nyc_taxi\deliverables\); submission zip = Bengaluru_Urban_Mobility_Project.zip (old NYC zip is in _archive_nyc_taxi).
+The Hadoop-via-WSL2 and hosting sections below still apply (swap in the new job folder names).
+================================================================================
+
+SMART URBAN TAXI ANALYTICS — CA3 ACTIVITY 2
+Things you need to do yourself (nothing here can be automated by the assistant)
+================================================================================
+
+WHAT WAS BUILT
+--------------
+pipeline/                  cleaning + MapReduce + ML training scripts (already run once)
+  01_clean_and_engineer.py     -> outputs/cleaned_taxi_data.csv, outputs/mapreduce_input.tsv
+  02_run_mapreduce.py           -> outputs/mapreduce/job1..job4 *.csv (real mapper->shuffle/sort->reducer)
+  03_train_models.py            -> models/trip_duration_model.joblib, models/demand_level_model.joblib
+  04_precompute_dashboard.py    -> outputs/dashboard_data.json (what the front end reads)
+  run_all.py                    -> runs all four in order
+backend/                    Flask app (app.py) + HTML/CSS/JS dashboard (templates/, static/)
+models/, outputs/           generated artifacts (already populated from a real run on your data)
+
+Current results from the run I already did on your nyc_taxi_trip_duration.csv:
+  - 722,432 cleaned rows
+  - Trip duration model: MAE ~3.8 minutes, R2 ~0.69
+  - Demand-level model (Low/Medium/High): ~69% accuracy, 3 balanced classes
+
+
+1. RUNNING IT LOCALLY (you should still do this yourself once, to see it work)
+--------------------------------------------------------------------------------
+Open PowerShell in this folder (C:\all\3 sem\bda\a2) and run:
+
+    pip install -r requirements.txt      (only needed if something is missing —
+                                           pandas, numpy, scikit-learn, joblib, Flask
+                                           were already installed on this machine)
+
+    python pipeline\run_all.py           (re-runs cleaning + MapReduce + ML + dashboard
+                                           prep; only needed if you change the dataset
+                                           or the scripts — outputs are already there)
+
+    python backend\app.py
+
+Then open http://127.0.0.1:5000 in your browser. Ctrl+C in the terminal stops it.
+
+
+2. REAL HADOOP (your teacher asked specifically for Hadoop)
+--------------------------------------------------------------------------------
+Right now the MapReduce jobs run locally as real mapper -> shuffle/sort -> reducer
+subprocess pipelines (pipeline/02_run_mapreduce.py) — this is the same execution
+model Hadoop Streaming uses, and it satisfies the syllabus wording ("simulate or
+implement MapReduce logic"). The mapper.py/reducer.py files themselves
+(pipeline/mapreduce/job*/mapper.py, reducer.py) are written to be Hadoop-Streaming
+compatible as-is.
+
+Hadoop and WSL are NOT currently installed on this machine. If your teacher wants
+to literally see `hadoop jar ...` run, or a screenshot of the Hadoop web UI, do
+this yourself (this cannot be scripted for you — it needs a restart and admin
+rights):
+
+  a) Install WSL2 + Ubuntu (run as Administrator in PowerShell):
+        wsl --install
+     Restart Windows when prompted, then finish the Ubuntu setup (username/password).
+
+  b) Inside the Ubuntu/WSL terminal, install Java + Hadoop (single-node,
+     "pseudo-distributed" mode is enough for a class demo):
+        sudo apt update && sudo apt install -y openjdk-11-jdk-headless
+        wget https://downloads.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
+        tar -xzf hadoop-3.3.6.tar.gz
+        sudo mv hadoop-3.3.6 /usr/local/hadoop
+     Then follow Apache's official pseudo-distributed setup guide to edit
+     core-site.xml / hdfs-site.xml / mapred-site.xml / yarn-site.xml and format
+     the namenode (`hdfs namenode -format`), then `start-dfs.sh` and `start-yarn.sh`.
+     Full guide: https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/SingleCluster.html
+
+  c) Copy this project into the WSL filesystem (Hadoop is much happier there than
+     reading across the Windows/WSL boundary), e.g.:
+        cp -r /mnt/c/all/3\ sem/bda/a2 ~/taxi-project
+
+  d) Put the MapReduce input on HDFS and run Job 1 as an example
+     (repeat -mapper/-reducer/-file for job2/job3/job4 the same way):
+        hdfs dfs -mkdir -p /taxi
+        hdfs dfs -put ~/taxi-project/outputs/mapreduce_input.tsv /taxi/
+
+        hadoop jar /usr/local/hadoop/share/hadoop/tools/lib/hadoop-streaming-*.jar \
+          -input /taxi/mapreduce_input.tsv \
+          -output /taxi/out_job1 \
+          -mapper mapper.py \
+          -reducer reducer.py \
+          -file ~/taxi-project/pipeline/mapreduce/job1_demand_by_hour/mapper.py \
+          -file ~/taxi-project/pipeline/mapreduce/job1_demand_by_hour/reducer.py \
+          -file ~/taxi-project/pipeline/schema.py
+
+        hdfs dfs -cat /taxi/out_job1/part-00000 | head
+
+  e) Take screenshots of the terminal output and of the YARN web UI
+     (http://localhost:8088) — this is almost certainly what "screenshots" in the
+     rubric wants, and it's the easiest way to visibly prove Hadoop was used.
+
+If this feels like too much for the time you have, it is genuinely optional —
+the pipeline/mapreduce scripts already demonstrate correct Mapper/Reducer logic
+and the activity brief explicitly allows "simulate or implement". Mention in your
+report that the jobs are Hadoop-Streaming-compatible and were also run locally
+without a cluster.
+
+
+3. THE WRITTEN DELIVERABLES THE RUBRIC ASKS FOR (I cannot write these for you
+   truthfully — they need to be in your own words / your own screenshots)
+--------------------------------------------------------------------------------
+Per the handbook (CA3 Activity 2, pages 72-73), you must submit:
+  - Code (this project)
+  - Output screenshots (dashboard tabs, MapReduce terminal output, model metrics)
+  - A short analytical report covering: dataset source, cleaning steps, MapReduce
+    approach, key analytics/visualization findings, the ML technique used and why,
+    and business insights/recommendations
+  - Be ready to explain/demo it live (viva)
+
+Suggested screenshots to grab from the running dashboard:
+  - Analytics tab (both scroll positions)
+  - MapReduce Jobs tab (shows the 3 job tables + explanation text)
+  - Predict tab with a filled-in example and its result
+  - Terminal output of `python pipeline\run_all.py` (shows cleaning counts,
+    MapReduce mapper/reducer/shuffle timings, and ML metrics)
+
+
+4. HOSTING IT LATER (you said you'll do this yourself — options, ranked easiest first)
+--------------------------------------------------------------------------------
+This is a normal Flask app, so any of these work. None of this was done for you.
+
+  Option A — Render.com (free tier, easiest for a Flask app):
+    1. Create a GitHub repo for this project and push it (see section 5 below —
+       do NOT commit nyc_taxi_trip_duration.csv, it's ~93MB and not needed to run
+       the site once outputs/ and models/ already exist).
+    2. On render.com: New -> Web Service -> connect the repo.
+    3. Build command:  pip install -r requirements.txt
+       Start command:  gunicorn --chdir backend app:app
+       (add `gunicorn` to requirements.txt before deploying — not installed here
+       since it's Linux-oriented and this machine is Windows dev-only)
+    4. Make sure outputs/dashboard_data.json and models/*.joblib are committed
+       (they're small, a few MB) so the deployed app doesn't need to re-run the
+       whole pipeline on the server.
+
+  Option B — PythonAnywhere (also free tier, good if Render is unavailable).
+
+  Option C — Any VM/VPS you already have: `pip install -r requirements.txt
+  gunicorn`, run `gunicorn --chdir backend app:app --bind 0.0.0.0:8000` behind
+  nginx, or just `python backend\app.py` for a quick demo (not production-safe,
+  fine for a class demo).
+
+I did NOT create a GitHub repo, did NOT sign up for any hosting service, and did
+NOT install gunicorn — all of that needs your own accounts/credentials.
+
+
+5. GIT (optional but recommended before hosting)
+--------------------------------------------------------------------------------
+This folder is not currently a git repository. If/when you want to push it to
+GitHub for hosting, run yourself:
+
+    git init
+    git add pipeline backend requirements.txt MANUAL_TODO.txt
+    git commit -m "Smart Urban Taxi Analytics - CA3 Activity 2"
+
+Deliberately NOT added above: nyc_taxi_trip_duration.csv (93MB raw data),
+outputs/cleaned_taxi_data.csv and outputs/mapreduce/job4_demand_dataset.csv
+(large generated files), and the handbook PDF. Add outputs/dashboard_data.json
+and models/*.joblib explicitly if you want the deployed site to work without
+re-running the pipeline on the server:
+
+    git add outputs/dashboard_data.json models/*.joblib models/*.json
+
+
+6. THINGS WORTH DOUBLE-CHECKING YOURSELF
+--------------------------------------------------------------------------------
+- I trained the models on a 300,000-row sample (trip duration) and the full
+  191,546-row MapReduce Job 4 output (demand level) to keep training time
+  reasonable on a laptop. If you want the duration model trained on the full
+  722,432 rows, edit MAX_TRAINING_ROWS in pipeline/03_train_models.py and re-run
+  `python pipeline\03_train_models.py` (takes longer, a few minutes).
+- Demand-level thresholds (Low/Medium/High) are computed from the 33rd/66th
+  percentile of trip counts per (date, hour, ~1.1km grid cell) — this is the same
+  approach your friend's notebook used, just on a coarser location grid so the
+  three classes actually come out balanced. Worth mentioning in your report.
