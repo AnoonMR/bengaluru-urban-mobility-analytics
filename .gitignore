@@ -29,3 +29,9 @@ PROJECT_SUMMARY.txt
 
 # Office lock files
 ~$*
+
+# Local-only project files
+CLAUDE.md
+requirements.txt
+MANUAL_TODO.txt
+command.txt
