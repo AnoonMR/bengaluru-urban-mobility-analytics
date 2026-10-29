@@ -31,9 +31,16 @@ removed from `pipeline/mapreduce/` via Recycle Bin (copies are in the
 archive).
 
 **Deliverables regenerated for Bengaluru (2026-10-23):**
-`deliverables/Bengaluru_Urban_Mobility_Report.{docx,pdf}` (14 pages, python-docx)
-and `deliverables/Bengaluru_Urban_Mobility_Presentation.{pptx,pdf}` (17 slides,
-pptxgenjs, navy/amber style kept from the NYC deck; speaker notes included).
+`deliverables/Bengaluru_Urban_Mobility_Report.{docx,pdf}` (14 pages, python-docx).
+
+**Final deck (2026-10-27): `final/Bengaluru_Urban_Mobility_Presentation_12_Slides.pptx`**
+— 12 slides, navy/amber, speaker notes; slide 1 has the 5 team members + USNs.
+It replaced the earlier 17-slide `deliverables/Bengaluru_Urban_Mobility_Presentation.{pptx,pdf}`
+(removed from git; local copies sent to Recycle Bin). On 2026-10-29 the closing slide
+was cut to "Thank you" + the GitHub repo link (shape-level hyperlink so the text stays
+amber; a run-level link renders theme blue). No PDF of the final deck exists yet.
+`CONTRIBUTIONS.md` (team split by slide) is local only, ignored via `.git/info/exclude`.
+
 Screenshots were captured from the live dashboard with headless Chrome + CDP
 (light theme). The old NYC report/deck were moved to
 `_archive_nyc_taxi/deliverables/`. The old
@@ -154,9 +161,11 @@ breakpoints).
 
 ## Still open (user's to do)
 
-1. Report, deck and zip are all Bengaluru now. If code/deliverables change,
-   rebuild the zip (script logic: same 36-file list) and commit + push.
-2. Fill in real names/date on title pages (`[Your Name]` etc.) — never guess.
+1. `Bengaluru_Urban_Mobility_Project.zip` is STALE — it still contains the old
+   17-slide deck. Rebuild it with the final deck (same 36-file list otherwise)
+   if it's going to be submitted.
+2. Deck title slide has real team names/USNs. Check the report title page for
+   `[Your Name]`-style placeholders — fill from the deck, never guess.
 3. Submission deadline per handbook: 06-11-2026 (verify against handbook p.5).
 4. Optional hosting / real Hadoop via WSL2 — user declined WSL; don't re-suggest.
 
@@ -174,8 +183,9 @@ breakpoints).
   `select_dtypes`.
 - Python deps global (pandas, numpy, scikit-learn, joblib, Flask). No
   xgboost, WSL, Hadoop, Docker. Java 17 present.
-- Git repo (since 2026-10-24), pushed to private GitHub repo
-  `AnoonMR/bengaluru-urban-mobility-analytics`, branch `main`. `.gitignore`
+- Git repo (since 2026-10-24), pushed to **public** GitHub repo
+  `AnoonMR/bengaluru-urban-mobility-analytics`, branch `main` (verify with
+  `gh repo view --json visibility` before claiming either way). `.gitignore`
   excludes big CSVs, the archive, zips, the NYC notebook and the handbook.
 - Flask debug reloader does NOT reload models — restart the server after
   re-running the pipeline. Kill with `netstat -ano | grep ":5000 "` →
