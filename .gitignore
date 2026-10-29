@@ -23,3 +23,9 @@ MCA_AIML_2026-27(Odd)_III_Sem_Handbook.pdf
 *.zip
 *.ipynb
 Topic Smart Urban Taxi Analytics Bi.txt
+
+# Personal presenting notes (local only)
+PROJECT_SUMMARY.txt
+
+# Office lock files
+~$*

@@ -38,8 +38,13 @@ archive).
 It replaced the earlier 17-slide `deliverables/Bengaluru_Urban_Mobility_Presentation.{pptx,pdf}`
 (removed from git; local copies sent to Recycle Bin). On 2026-10-29 the closing slide
 was cut to "Thank you" + the GitHub repo link (shape-level hyperlink so the text stays
-amber; a run-level link renders theme blue). No PDF of the final deck exists yet.
-`CONTRIBUTIONS.md` (team split by slide) is local only, ignored via `.git/info/exclude`.
+amber; a run-level link renders theme blue). PDF export (2026-10-29):
+`final/Bengaluru_Urban_Mobility_Presentation_12_Slides.pdf` (PowerPoint COM, exported
+from a scratch copy so it works while the user has the deck open). Regenerate it
+whenever the pptx changes.
+Local-only notes, never pushed: `CONTRIBUTIONS.md` (team split by slide, via
+`.git/info/exclude`) and `PROJECT_SUMMARY.txt` (user's short presenting/viva notes,
+via `.gitignore`).
 
 Screenshots were captured from the live dashboard with headless Chrome + CDP
 (light theme). The old NYC report/deck were moved to
